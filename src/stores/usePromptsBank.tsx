@@ -121,7 +121,7 @@ export const usePromptsBank = create<PromptsBankState>()(
             },
         }),
         {
-            name: 'prompts-bank-storage',
+            name: 'sn-coding-tools-prompts-bank-storage',
             storage: createJSONStorage(() => localStorage),
         }
     )
