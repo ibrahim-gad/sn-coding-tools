@@ -10,9 +10,9 @@ interface NavbarProps {
 const Navbar = ({ onThemeToggle, isDarkTheme }: NavbarProps) => {
   return (
     <AppBar position="fixed">
-      <Toolbar>
+      <Toolbar className='container mx-auto'>
         <Typography variant="h6" component="div" className="flex-grow text-white">
-          SN Coding Helpers
+          SN Coding Tools
         </Typography>
         <Box className="flex gap-4 items-center">
           <Button

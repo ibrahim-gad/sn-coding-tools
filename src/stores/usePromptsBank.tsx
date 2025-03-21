@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as Papa from 'papaparse';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import defaultPromptBank from '../lib/defaultPromptBank';
-
+import { toast } from 'react-toastify';
 interface PromptsBankState {
     promptBank: Category[];
     loading: boolean;
@@ -118,6 +118,7 @@ export const usePromptsBank = create<PromptsBankState>()(
                     }));
                 }
                 set({ loading: false });
+                toast.success('Prompts bank updated successfully');
             },
         }),
         {

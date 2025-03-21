@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 interface InformationModalProps {
     modalOpen: boolean;
     handleCloseModal: () => void;
-    modalContent: string | React.JSX.Element;
+    modalContent: ReactNode;
 }
 
 const InformationModal: React.FC<InformationModalProps> = ({ modalOpen, handleCloseModal, modalContent }) => {

@@ -3,7 +3,6 @@ We wanna use the llm as An assistant that can call various tools when needed, th
 
 # General instructions for the system prompt:
 - It must be realistic. Consider that the system message is a message from the developer / operator of the bot, it must include accurate, relevant, and reliable information.
-- Including a date or date-time is generally a good idea. Without that, the assistant has no concept of "today", "tomorrow", "next week", "next month", "next Monday", etc.
 - Including conditionals is great.
 - No "mind reading", or "knowing the future": you have to consider whether the session with the client was started with a specific purpose, and include only the relevant information.
 - Relevant information: As previously stated, all the information included should be relevant. They don't need to be relevant for the specific conversation that will be played out but they must be relevant to the scenario.
@@ -20,7 +19,7 @@ We wanna use the llm as An assistant that can call various tools when needed, th
 
 ---
 # Context about the use case:
-{{scenario}}
+{{useCase}}
 
 ---
 # Example system prompt for learning:
@@ -52,7 +51,7 @@ export const defaultNFCPrompt = `We are creating a system prompt for an llm that
 
 ---
 # Context about the use case:
-{{scenario}}
+{{useCase}}
 
 ---
 # Example conversation for learning:

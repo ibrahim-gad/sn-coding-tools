@@ -6,7 +6,6 @@ import AppLayout from './layouts/AppLayout';
 import Home from './pages/Home';
 import Settings from './pages/Settings';
 import { ToastContainer } from 'react-toastify';
-// Create a theme instance
 const theme = createTheme({
   palette: {
     mode: 'light',
@@ -31,7 +30,14 @@ const App = () => {
           </Routes>
         </AppLayout>
       </Router>
-      <ToastContainer />
+      <ToastContainer 
+        position="bottom-right" 
+        pauseOnHover={false} 
+        stacked={true} 
+        newestOnTop={true}
+        closeOnClick={true}
+        autoClose={3000}
+      />
     </ThemeProvider>
   );
 };

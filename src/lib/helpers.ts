@@ -60,7 +60,8 @@ export const extractAvailableData = ({userName, date, useTimeInDate}:PromptData)
         availableData += `- User name: ${userName}\n`;
     }
     if (date) {
-        availableData += `- Date: ${date.toDateString()}${useTimeInDate ? ` ${date.toTimeString()}` : ''}\n`;
+        const dateObj = new Date(date);
+        availableData += `- Date: ${dateObj.toDateString()}${useTimeInDate ? ` ${dateObj.toTimeString()}` : ''}\n`;
     }
     return availableData;
 }

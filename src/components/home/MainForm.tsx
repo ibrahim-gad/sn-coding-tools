@@ -7,12 +7,14 @@ import {
     PromptData
 } from '../../types/PromptTypes';
 import { usePromptsBank } from '../../stores/usePromptsBank';
+import { useFormStore } from '../../stores/useFormStore';
 import { Switch, Select, MenuItem, TextField, FormControl, Button, FormControlLabel, FormGroup, Box, IconButton } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { formHelpText } from '../../lib/help-texts';
 import InformationModal from "./InformationModal";
 import { Visibility } from "@mui/icons-material";
 import { TaskType } from '../../types/PromptTypes';
+import { ReactNode } from 'react';
 
 interface MainFormProps {
     formSubmitHandler: (data: PromptData) => void;
@@ -20,25 +22,16 @@ interface MainFormProps {
 
 const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
     const { promptBank } = usePromptsBank();
-    const [addressee, setAddressee] = useState('assistant');
-    const [category, setCategory] = useState('');
-    const [siFormat, setSiFormat] = useState(SystemPromptFormat.MARKDOWN);
-    const [userPromptFormat, setUserPromptFormat] = useState(UserPromptFormat.MARKDOWN);
-    const [assistantResponseFormat, setAssistantResponseFormat] = useState(AssistantResponseFormat.MARKDOWN);
-    const [examplePrompt, setExamplePrompt] = useState('');
-    const [userName, setUserName] = useState('');
-    const [date, setDate] = useState(new Date());
-    const [useTimeInDate, setUseTimeInDate] = useState(true);
-    const [scenario, setScenario] = useState('');
+    const { formData, setFormData, resetForm } = useFormStore();
     const [prompts, setPrompts] = useState<Prompt[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
-    const [modalContent, setModalContent] = useState<string|React.JSX.Element>('');
+    const [modalContent, setModalContent] = useState<ReactNode>('');
 
     const isFormValid = () => {
-        return category && siFormat && addressee && examplePrompt && userPromptFormat && assistantResponseFormat && scenario;
+        return formData.category && formData.siFormat && formData.addressee && formData.examplePrompt && formData.userPromptFormat && formData.assistantResponseFormat && formData.useCase;
     };
 
-    const handleOpenModal = (content: string|React.JSX.Element) => {
+    const handleOpenModal = (content: ReactNode) => {
         setModalContent(content);
         setModalOpen(true);
     };
@@ -49,7 +42,7 @@ const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
     };
 
     const handleOpenExamplePromptModal = () => {
-        const selectedPrompt = prompts.find(prompt => prompt.id === examplePrompt);
+        const selectedPrompt = prompts.find(prompt => prompt.id === formData.examplePrompt);
         console.log(selectedPrompt);
         if (selectedPrompt) {
             setModalContent(selectedPrompt.prompt);
@@ -59,36 +52,31 @@ const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const data = {
-            category,
-            siFormat,
-            addressee,
-            examplePrompt,
-            userPromptFormat,
-            assistantResponseFormat,
-            userName,
-            date,
-            useTimeInDate,
-            scenario
-        };
-        formSubmitHandler(data);
+        
+        formSubmitHandler({
+            ...formData,
+            siFormat: formData.siFormat as SystemPromptFormat,
+            userPromptFormat: formData.userPromptFormat as UserPromptFormat,
+            assistantResponseFormat: formData.assistantResponseFormat as AssistantResponseFormat,
+            date: formData.date, // Now we know this is not null
+        });
     };
 
     useEffect(() => {
-        if (category) {
-            const selectedCategory = promptBank.find(cat => cat.id === category);
-            setPrompts(selectedCategory ? selectedCategory.prompts.filter(item => item.format === siFormat && item.addressee === addressee) : []);
+        if (formData.category) {
+            const selectedCategory = promptBank.find(cat => cat.id === formData.category);
+            setPrompts(selectedCategory ? selectedCategory.prompts.filter(item => item.format === formData.siFormat && item.addressee === formData.addressee) : []);
         } else {
             setPrompts([]);
         }
-    }, [category, siFormat, addressee, promptBank]);
+    }, [formData.category, formData.siFormat, formData.addressee, promptBank]);
 
     useEffect(() => {
-        const selectedPrompt = prompts.find(prompt => prompt.id === examplePrompt);
-        if (!selectedPrompt) {
-            setExamplePrompt('');
+        const selectedPrompt = prompts.find(prompt => prompt.id === formData.examplePrompt);
+        if (prompts.length > 0 && !selectedPrompt && formData.examplePrompt) {
+            setFormData({ ...formData, examplePrompt: '' });
         }
-    }, [prompts]);
+    }, [prompts, setFormData]);
 
     return (
         <form className="space-y-4 p-4 bg-white dark:bg-[#1E1E1E] shadow-lg rounded-lg" onSubmit={handleSubmit}>
@@ -98,15 +86,12 @@ const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
             <Box className="bg-gray-200 p-2 pb-6 dark:bg-[#2D2D2D]" display="flex" gap={2} flexDirection="column">
                 <Box display="flex" gap={2}>
                     <FormControl fullWidth>
-                        <label className="text-gray-900 dark:text-gray-100">
+                        <label className="text-gray-900 dark:text-gray-100 h-10 flex items-center">
                             Area *
-                            <IconButton className="text-gray-900 dark:text-gray-100" onClick={() => handleOpenModal(formHelpText.category)}>
-                                <InfoIcon />
-                            </IconButton>
                         </label>
                         <Select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value as string)}
+                            value={formData.category}
+                            onChange={(e) => setFormData({ ...formData, category: e.target.value as string })}
                             className="bg-white dark:bg-[#1E1E1E] text-gray-900 dark:text-gray-100"
                         >
                             {promptBank.map(cat => (
@@ -119,8 +104,8 @@ const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
                             SI Format *
                         </label>
                         <Select
-                            value={siFormat}
-                            onChange={(e) => setSiFormat(e.target.value as SystemPromptFormat)}
+                            value={formData.siFormat}
+                            onChange={(e) => setFormData({ ...formData, siFormat: e.target.value as SystemPromptFormat })}
                             className="bg-white dark:bg-[#1E1E1E] text-gray-900 dark:text-gray-100"
                         >
                             {Object.values(SystemPromptFormat).map(format => (
@@ -139,8 +124,8 @@ const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
                             <FormControlLabel
                                 control={
                                     <Switch
-                                        checked={addressee === 'third-person'}
-                                        onChange={() => setAddressee(addressee === 'assistant' ? 'third-person' : 'assistant')}
+                                        checked={formData.addressee === 'third-person'}
+                                        onChange={() => setFormData({ ...formData, addressee: formData.addressee === 'assistant' ? 'third-person' : 'assistant' })}
                                         name="addressee"
                                         color="primary"
                                     />
@@ -157,15 +142,15 @@ const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
                         <IconButton className="text-gray-900 dark:text-gray-100" onClick={() => handleOpenModal(formHelpText.examplePrompt)}>
                             <InfoIcon />
                         </IconButton>
-                        {examplePrompt && (
+                        {formData.examplePrompt && (
                             <IconButton className="text-gray-900 dark:text-gray-100" onClick={handleOpenExamplePromptModal}>
                                 <Visibility />
                             </IconButton>
                         )}
                     </label>
                     <Select
-                        value={examplePrompt}
-                        onChange={(e) => setExamplePrompt(e.target.value as string)}
+                        value={formData.examplePrompt}
+                        onChange={(e) => setFormData({ ...formData, examplePrompt: e.target.value as string })}
                         className="bg-white dark:bg-[#1E1E1E] text-gray-900 dark:text-gray-100"
                     >
                         {prompts.map(prompt => (
@@ -180,8 +165,8 @@ const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
                         User Prompt Format *
                     </label>
                     <Select
-                        value={userPromptFormat}
-                        onChange={(e) => setUserPromptFormat(e.target.value as UserPromptFormat)}
+                        value={formData.userPromptFormat}
+                        onChange={(e) => setFormData({ ...formData, userPromptFormat: e.target.value as UserPromptFormat })}
                         className="bg-white dark:bg-[#1E1E1E] text-gray-900 dark:text-gray-100"
                     >
                         {Object.values(UserPromptFormat).map(format => (
@@ -194,8 +179,8 @@ const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
                         Assistant Response Format *
                     </label>
                     <Select
-                        value={assistantResponseFormat}
-                        onChange={(e) => setAssistantResponseFormat(e.target.value as AssistantResponseFormat)}
+                        value={formData.assistantResponseFormat}
+                        onChange={(e) => setFormData({ ...formData, assistantResponseFormat: e.target.value as AssistantResponseFormat })}
                         className="bg-white dark:bg-[#1E1E1E] text-gray-900 dark:text-gray-100"
                     >
                         {Object.values(AssistantResponseFormat).map(format => (
@@ -204,7 +189,7 @@ const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
                     </Select>
                 </FormControl>
             </Box>
-            {category && promptBank.find(cat => cat.id === category)?.taskType !== TaskType.NFC && (
+            {formData.category && promptBank.find(cat => cat.id === formData.category)?.taskType !== TaskType.NFC && (
                 <>
                     <Box display="flex" gap={2}>
                         <FormControl fullWidth>
@@ -214,8 +199,8 @@ const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
                             <TextField
                                 fullWidth
                                 type="datetime-local"
-                                value={date.toISOString().slice(0, 16)}
-                                onChange={(e) => setDate(new Date(e.target.value))}
+                                value={formData.date ? new Date(formData.date).toISOString().slice(0, 16) : ''}
+                                onChange={(e) => setFormData({ ...formData, date: e.target.value ? new Date(e.target.value) : null })}
                                 InputLabelProps={{
                                     shrink: true,
                                 }}
@@ -231,8 +216,8 @@ const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
                                     <FormControlLabel
                                         control={
                                             <Switch
-                                                checked={useTimeInDate}
-                                                onChange={() => setUseTimeInDate(!useTimeInDate)}
+                                                checked={formData.useTimeInDate}
+                                                onChange={() => setFormData({ ...formData, useTimeInDate: !formData.useTimeInDate })}
                                                 name="useTimeInDate"
                                                 color="primary"
                                             />
@@ -250,8 +235,8 @@ const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
                         </label>
                         <TextField
                             fullWidth
-                            value={userName}
-                            onChange={(e) => setUserName(e.target.value)}
+                            value={formData.userName}
+                            onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
                             className="bg-white dark:bg-[#1E1E1E] text-gray-900 dark:text-gray-100"
                         />
                     </FormControl>
@@ -259,18 +244,28 @@ const MainForm: React.FC<MainFormProps> = ({ formSubmitHandler }) => {
             )}
             <FormControl fullWidth>
                 <label className="text-gray-900 dark:text-gray-100 h-10 flex items-center">
-                    Scenario *
+                    Use Case *
+                    <IconButton className="text-gray-900 dark:text-gray-100" onClick={() => handleOpenModal(formHelpText.useCase)}>
+                        <InfoIcon />
+                    </IconButton>
                 </label>
                 <TextField
                     fullWidth
                     multiline
                     rows={4}
-                    value={scenario}
-                    onChange={(e) => setScenario(e.target.value)}
+                    value={formData.useCase}
+                    onChange={(e) => setFormData({ ...formData, useCase: e.target.value })}
                     className="bg-white dark:bg-[#1E1E1E] text-gray-900 dark:text-gray-100"
                 />
             </FormControl>
-            <Box display="flex" justifyContent="flex-end" sx={{ mt: 3 }}>
+            <Box display="flex" justifyContent="flex-end" sx={{ mt: 3 }} gap={2}>
+                <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={resetForm}
+                >
+                    Reset Form
+                </Button>
                 <Button
                     type="submit"
                     variant="contained"

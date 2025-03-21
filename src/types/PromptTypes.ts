@@ -48,7 +48,7 @@ export interface PromptData {
     userPromptFormat: UserPromptFormat;
     assistantResponseFormat: AssistantResponseFormat;
     userName: string;
-    date: Date;
+    date: Date | null;
     useTimeInDate: boolean;
-    scenario: string;
+    useCase: string;
 } 
