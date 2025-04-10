@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "rsbuild build",
+    "build": "rsbuild build && cp public/404.html dist/",
     "dev": "rsbuild dev --open",
     "preview": "rsbuild preview"
   },
